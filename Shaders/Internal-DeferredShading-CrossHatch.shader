@@ -9,7 +9,7 @@ Properties {
 	//Cross-Hatch Properties
 	_CrossHatchDeferredTexture("Cross Hatch Lookup", 2D) = "" {}
     _CrossHatchDeferredLightTexture("Cross Hatch Light Lookup", 2D) = "" {}
-    _CrossHatchDeferredLightRamp("Light Ramp", 2D) = "" {}
+    //_CrossHatchDeferredLightRamp("Light Ramp", 2D) = "" {}
 }
 SubShader {
 
@@ -43,6 +43,11 @@ sampler2D _CameraGBufferTexture0;
 sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
 
+//Cross-Hatch Variables
+sampler2D _CrossHatchDeferredTexture;
+sampler2D _CrossHatchDeferredLightTexture;
+sampler2D _CrossHatchDeferredLightRamp;
+
 half4 CalculateLight (unity_v2f_deferred i)
 {
     float3 wpos;
@@ -73,10 +78,12 @@ half4 CalculateLight (unity_v2f_deferred i)
 	//grab texture uv weights
     float3 uvWeights = TriPlanarWeights(data.normalWorld);
 	
-	half lumV = Luminance(light.color);
-    half cross = CrossShade(lumV, wpos, uvWeights);
+	const float crossHatchScale = 1;
 	
-	light.color *= cross;
+	half lumV = Luminance(light.color);
+    half cross = CrossShade(_CrossHatchDeferredTexture, crossHatchScale, lumV, wpos, uvWeights);
+	
+	light.color = cross;
 	
 	//
 

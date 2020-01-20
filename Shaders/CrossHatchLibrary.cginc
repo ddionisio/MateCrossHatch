@@ -2,10 +2,6 @@
 #ifndef CROSSHATCH_LIBRARY_INCLUDED
 #define CROSSHATCH_LIBRARY_INCLUDED
 
-sampler2D _CrossHatchDeferredTexture;
-sampler2D _CrossHatchDeferredLightTexture;
-sampler2D _CrossHatchDeferredLightRamp;
-
 float3 TriPlanarWeights(float3 normal) {
     const float _TriplanarSharpness = 1;
 
@@ -23,29 +19,9 @@ half4 Tex2DTriPlanar(sampler2D tex, float3 position, float3 weights, float scale
     return xTex*weights.x + yTex*weights.y + zTex*weights.z;
 }
 
-half CrossShade(half shade, float3 position, half3 texWeights) {
-    const float _CrossHatchScale = 1;
-
+half CrossShade(sampler2D crossHatchDeferredTexture, float crossHatchScale, half shade, float3 position, half3 texWeights) {
     //grab hatch info
-    half4 hatch = Tex2DTriPlanar(_CrossHatchDeferredTexture, position, texWeights, _CrossHatchScale);
-
-    //compute weights
-    half4 shadingFactor = half4(shade.xxxx);
-    const half4 leftRoot = half4(-0.25, 0.0, 0.25, 0.5);
-    const half4 rightRoot = half4(0.25, 0.5, 0.75, 1.0);
-
-    half4 weights = 4.0 * max(0, min(rightRoot - shadingFactor, shadingFactor - leftRoot));
-
-    //final shade
-
-    return dot(weights, hatch.abgr) + 4.0*clamp(shade - 0.75, 0, 0.25);
-}
-
-half CrossLight(half shade, float3 position, half3 texWeights) {
-    const float _CrossHatchScale = 0.5;
-
-    //grab hatch info
-    half4 hatch = Tex2DTriPlanar(_CrossHatchDeferredLightTexture, position, texWeights, _CrossHatchScale);
+    half4 hatch = Tex2DTriPlanar(crossHatchDeferredTexture, position, texWeights, crossHatchScale);
 
     //compute weights
     half4 shadingFactor = half4(shade.xxxx);
